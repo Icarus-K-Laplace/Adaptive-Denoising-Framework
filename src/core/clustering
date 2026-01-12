@@ -1,0 +1,60 @@
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+class FeatureBasedClustering:
+    """
+    Robust clustering engine for image regions.
+    Groups pixels with similar structural characteristics.
+    """
+    
+    def __init__(self, config):
+        self.config = config
+        self.kmeans = None
+        
+    def fit_predict(self, features):
+        """
+        Cluster pixels based on extracted features.
+        
+        Args:
+            features (dict): Dictionary of feature maps (e.g., 'local_mean', 'gradient_magnitude').
+            
+        Returns:
+            cluster_labels (np.ndarray): 2D array of cluster IDs.
+        """
+        # 1. Prepare Feature Matrix
+        # We use key structural features for clustering
+        keys = ['local_mean', 'local_var', 'gradient_magnitude']
+        valid_keys = [k for k in keys if k in features]
+        
+        if not valid_keys:
+            raise ValueError("No valid features found for clustering.")
+            
+        h, w = features[valid_keys[0]].shape
+        # Stack features: (N, C)
+        feature_stack = np.stack([features[k].flatten() for k in valid_keys], axis=1)
+        
+        # 2. Sampling for Speed
+        # Clustering all pixels is slow; sample 10,000 points to fit KMeans
+        n_samples = min(10000, feature_stack.shape[0])
+        indices = np.random.choice(feature_stack.shape[0], n_samples, replace=False)
+        sample_data = feature_stack[indices]
+        
+        # 3. Standardization
+        scaler = StandardScaler()
+        sample_scaled = scaler.fit_transform(sample_data)
+        
+        # 4. Fit KMeans
+        self.kmeans = KMeans(
+            n_clusters=self.config.intensity_clusters,
+            random_state=42,
+            n_init=3
+        )
+        self.kmeans.fit(sample_scaled)
+        
+        # 5. Predict All Pixels
+        # Normalize all data using the fitted scaler
+        all_scaled = scaler.transform(feature_stack)
+        labels = self.kmeans.predict(all_scaled)
+        
+        return labels.reshape(h, w)
