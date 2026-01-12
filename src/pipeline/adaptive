@@ -1,0 +1,36 @@
+import numpy as np
+import cv2
+from .quality_mode import QualityFirstDenoiser
+from .speed_mode import SpeedFirstDenoiser
+
+class AdaptiveFusionDenoiser:
+    """Orchestrates Quality and Speed modes based on image content."""
+    
+    def __init__(self, config):
+        self.quality = QualityFirstDenoiser(config)
+        self.speed = SpeedFirstDenoiser(config)
+        
+    def denoise(self, noisy, mask, mode='auto'):
+        if mode == 'auto':
+            mode = self._select_mode(noisy, mask)
+        
+        print(f"🤖 Adaptive Selector: Switching to {mode.upper()} mode")
+        
+        if mode == 'quality':
+            return self.quality.denoise(noisy, mask)
+        else:
+            return self.speed.denoise(noisy, mask)
+
+    def _select_mode(self, img, mask):
+        # Decision Logic
+        noise_density = np.sum(mask) / mask.size
+        
+        # Calculate texture complexity
+        gx = cv2.Sobel(img, cv2.CV_32F, 1, 0)
+        texture = np.mean(np.abs(gx))
+        
+        score = 0
+        if texture > 50: score += 2  # High texture -> needs Quality
+        if noise_density > 0.5: score -= 1 # High noise -> needs Speed (sometimes)
+        
+        return 'quality' if score > 0 else 'speed'
