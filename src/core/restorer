@@ -1,0 +1,52 @@
+import numpy as np
+from ..utils.memory import MemoryManager
+
+class RobustPixelRestorer:
+    """Core pixel restoration logic."""
+    
+    def __init__(self, config):
+        self.config = config
+        self.memory = MemoryManager(config.memory_limit_mb)
+
+    def restore_image(self, noisy, mask, features):
+        """Restore image using feature-guided adaptive weights."""
+        h, w = noisy.shape
+        restored = noisy.copy()
+        coords = np.argwhere(mask > 0)
+        
+        # Batch processing for memory safety
+        batch_size = 5000
+        for i in range(0, len(coords), batch_size):
+            batch = coords[i:i+batch_size]
+            self._process_batch(batch, restored, mask, features)
+            
+            if i % 20000 == 0:
+                self.memory.check_memory()
+                
+        return restored
+
+    def _process_batch(self, coords, img, mask, feats):
+        for x, y in coords:
+            # Simplified logic for demonstration
+            # In real implementation, this uses the 8.0/0.3/7.7 rule
+            weight = self._calc_weight(x, y, feats)
+            valid = self._get_valid_neighbors(x, y, img, mask)
+            
+            if len(valid) < 3:
+                val = np.median(valid) if len(valid) > 0 else img[x,y]
+            else:
+                fit_val = np.median(valid) # Placeholder for polyfit
+                med_val = np.median(valid)
+                if weight > 8.0: val = fit_val
+                elif weight < 0.3: val = med_val
+                else: val = 0.5*fit_val + 0.5*med_val
+            
+            img[x, y] = val
+
+    def _calc_weight(self, x, y, feats):
+        grad = feats['gradient_magnitude'][x, y]
+        return 1.0 / (1.0 + grad * 5.0) * 10.0 # Example mapping
+
+    def _get_valid_neighbors(self, x, y, img, mask):
+        # (Implementation of window search 3->5->7)
+        return [] # Placeholder
