@@ -1,0 +1,38 @@
+import argparse
+import cv2
+import numpy as np
+from src.pipeline.adaptive import AdaptiveFusionDenoiser
+from src.utils.experiment import ExperimentManager
+from dataclasses import dataclass
+
+@dataclass
+class Config:
+    memory_limit_mb: int = 2048
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', default='quick')
+    parser.add_argument('--output', default='results')
+    args = parser.parse_args()
+
+    config = Config()
+
+    if args.mode == 'quick':
+        print("Running Quick Test...")
+        # Create dummy data
+        img = np.zeros((256,256), dtype=np.uint8)
+        cv2.circle(img, (128,128), 50, 255, -1)
+        noisy = img.copy() # Add noise here
+        mask = np.zeros_like(img) # Add mask here
+        
+        denoiser = AdaptiveFusionDenoiser(config)
+        res = denoiser.denoise(noisy, mask, mode='auto')
+        print("Done.")
+
+    elif args.mode == 'experiment':
+        print("Running Full Experiment...")
+        manager = ExperimentManager(args.output)
+        # Load real images and run manager.run_test(...)
+
+if __name__ == "__main__":
+    main()
