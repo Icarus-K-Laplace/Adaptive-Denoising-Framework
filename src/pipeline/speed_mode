@@ -1,0 +1,30 @@
+import time
+from ..core.features import ImageFeatureExtractor
+from ..core.restorer import RobustPixelRestorer
+
+class SpeedFirstDenoiser:
+    """
+    High-throughput denoising pipeline.
+    Disables clustering, uses simplified features and smaller windows.
+    """
+    
+    def __init__(self, config):
+        self.config = config
+        # Override config for speed
+        self.config.use_clustering = False
+        self.config.min_valid_pixels = 3
+        
+        self.extractor = ImageFeatureExtractor(config)
+        self.restorer = RobustPixelRestorer(config)
+        
+    def denoise(self, noisy, mask):
+        print("⚡ [Speed Mode] Starting...")
+        
+        # 1. Extract Basic Features Only
+        # (In a real implementation, you might pass a flag to extract_all to skip heavy features)
+        features = self.extractor.extract_all(noisy) 
+        
+        # 2. Restoration (Directly, no clustering)
+        result = self.restorer.restore_image(noisy, mask, features)
+        
+        return result
