@@ -1,0 +1,31 @@
+import numpy as np
+import cv2
+from skimage.metrics import structural_similarity as ssim
+
+class DenoisingEvaluator:
+    """Standardized evaluation metrics wrapper."""
+    
+    def evaluate(self, original, restored):
+        """
+        Compute all metrics.
+        Returns: dict
+        """
+        return {
+            'psnr': self.psnr(original, restored),
+            'ssim': self.ssim(original, restored),
+            'mse': self.mse(original, restored)
+        }
+
+    @staticmethod
+    def psnr(img1, img2):
+        mse = np.mean((img1.astype(float) - img2.astype(float)) ** 2)
+        if mse == 0: return 100.0
+        return 20 * np.log10(255.0 / np.sqrt(mse))
+
+    @staticmethod
+    def ssim(img1, img2):
+        return ssim(img1, img2, data_range=255)
+
+    @staticmethod
+    def mse(img1, img2):
+        return np.mean((img1.astype(float) - img2.astype(float)) ** 2)
