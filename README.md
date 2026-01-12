@@ -3,7 +3,7 @@
 ### A Modular, Reproducible, and Adaptive Image Restoration Platform
 
 > **Developed independently by an undergraduate student.**
-> This project represents a shift from "writing a script" to "building a system". It provides a robust infrastructure for evaluating, comparing, and deploying impulse noise removal algorithms under real-world constraints.
+> This project bridges the gap between theoretical algorithms and production-ready systems. It provides a robust infrastructure for evaluating, comparing, and deploying impulse noise removal algorithms under real-world constraints.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -46,3 +46,4 @@ The framework is organized into three layers:
 ### 1. Installation
 ```bash
 pip install -r requirements.txt
+
