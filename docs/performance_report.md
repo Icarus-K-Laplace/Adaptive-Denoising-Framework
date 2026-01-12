@@ -3,12 +3,11 @@
 
 ### 6. 📝 `docs/performance_report.md` (性能报告示例)
 
-这是一个**模板**，展示你的框架能生成什么样的报告。
 
 ```markdown
 # Performance Benchmark Report
 
-**Date:** 2024-01-20
+**Date:** 2025-12-20
 **Device:** Intel Core i7-12700H, 16GB RAM
 **Dataset:** Tianjin University UAV Infrared Dataset
 
