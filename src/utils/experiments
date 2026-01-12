@@ -1,0 +1,51 @@
+import time
+import cv2
+import numpy as np
+from pathlib import Path
+from .metrics import DenoisingEvaluator
+
+class ExperimentManager:
+    """Automates batch testing and report generation."""
+    
+    def __init__(self, output_dir):
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.evaluator = DenoisingEvaluator()
+        self.results = []
+
+    def run_test(self, images, noise_levels, algorithms):
+        for img_idx, img in enumerate(images):
+            for nl in noise_levels:
+                noisy, mask = self._add_noise(img, nl)
+                
+                for algo_name, denoiser in algorithms.items():
+                    start = time.time()
+                    res = denoiser.denoise(noisy, mask)
+                    elapsed = time.time() - start
+                    
+                    metrics = self.evaluator.evaluate(img, res)
+                    self._log_result(algo_name, nl, metrics, elapsed)
+                    
+                    # Save visual result
+                    cv2.imwrite(str(self.output_dir / f"{algo_name}_{nl}.png"), res)
+        
+        self._generate_report()
+
+    def _add_noise(self, img, level):
+        # (Standard S&P noise generation)
+        return img, np.zeros_like(img) # Placeholder
+
+    def _log_result(self, algo, noise, metrics, time):
+        self.results.append({
+            'algorithm': algo,
+            'noise': noise,
+            'psnr': metrics['psnr'],
+            'time': time
+        })
+
+    def _generate_report(self):
+        with open(self.output_dir / "report.txt", "w") as f:
+            f.write("Experiment Report\n=================\n")
+            for r in self.results:
+                f.write(f"{r['algorithm']} (Noise {r['noise']}): "
+                        f"PSNR={r['psnr']:.2f}dB, Time={r['time']:.2f}s\n")
