@@ -1,0 +1,37 @@
+import time
+from ..core.features import ImageFeatureExtractor
+from ..core.clustering import FeatureBasedClustering
+from ..core.restorer import RobustPixelRestorer
+
+class QualityFirstDenoiser:
+    """
+    High-precision denoising pipeline.
+    Enables clustering, complex features, and larger search windows.
+    """
+    
+    def __init__(self, config):
+        self.config = config
+        # Override config for quality
+        self.config.use_clustering = True
+        self.config.min_valid_pixels = 5
+        
+        self.extractor = ImageFeatureExtractor(config)
+        self.clusterer = FeatureBasedClustering(config)
+        self.restorer = RobustPixelRestorer(config)
+        
+    def denoise(self, noisy, mask):
+        print("🔬 [Quality Mode] Starting...")
+        
+        # 1. Extract Rich Features
+        features = self.extractor.extract_all(noisy)
+        
+        # 2. Perform Clustering (Structure Analysis)
+        print("   - Analyzing image structure...")
+        clusters = self.clusterer.fit_predict(features)
+        features['cluster_labels'] = clusters # Inject cluster info into features
+        
+        # 3. Restoration
+        print("   - Restoring pixels...")
+        result = self.restorer.restore_image(noisy, mask, features)
+        
+        return result
