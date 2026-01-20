@@ -7,7 +7,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-
+> Note: This is a legacy research prototype. For the production-ready engine with 60FPS performance, please check [AWLF-Fast-Universal]
 ---
 
 ## 💡 Design Philosophy
